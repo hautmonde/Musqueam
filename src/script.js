@@ -9,7 +9,7 @@ import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtil
 //import { GUI } from 'dat.gui'
 import { InteractionManager } from 'three.interactive';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import CircleProjector from './scripts/circleProjector';
+import CircleProjector from './circleProjector';
 
 
 // !————————1. Setup
@@ -355,7 +355,7 @@ async function initLandscape() {
         child.material.map = texture;
         child.material.flatShading = false;
         child.geometry.deleteAttribute("normal");
-        child.geometry = BufferGeometryUtils.mergeVertices(child.geometry);
+        // child.geometry = BufferGeometryUtils.mergeVertices(child.geometry);
         child.geometry.computeVertexNormals();
         child.castShadow = true; //default is false
         child.receiveShadow = true; //default
@@ -519,7 +519,7 @@ function onMouseMove(event) {
 }
 
 function createCursor(){
-  const circleProjector = new CircleProjector(scene, camera, landscapeMesh );
+const circleProjector = new CircleProjector(scene, camera, landscapeMesh );
 }
 
 
