@@ -519,7 +519,7 @@ function onMouseMove(event) {
 }
 
 function createCursor(){
-  const circleProjector = new CircleProjector(scene, camera, landscapeMesh);
+  const circleProjector = new CircleProjector(scene, camera, landscapeMesh );
 }
 
 

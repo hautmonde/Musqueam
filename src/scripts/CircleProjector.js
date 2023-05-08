@@ -6,20 +6,18 @@ export default class CircleProjector {
 	this.camera = camera;
 	this.landscapeMesh = landscapeMesh;
 
-	// Create a flat circle geometry and a material
 	const circleGeometry = new THREE.CircleBufferGeometry(circleRadius, circleSegments);
 	const circleMaterial = new THREE.MeshBasicMaterial({ color: circleColor });
 
-	// Create a mesh from the geometry and material, then add it to the scene
+
 	this.circleMesh = new THREE.Mesh(circleGeometry, circleMaterial);
-	this.circleMesh.rotation.x = -Math.PI / 2; // Rotate the circle so it's parallel to the landscape
+	this.circleMesh.rotation.x = -Math.PI / 2; 
+	// rotate to make parallel to landscape
 	this.scene.add(this.circleMesh);
 
-	// Create a raycaster
 	this.raycaster = new THREE.Raycaster();
 	this.mouse = new THREE.Vector2();
 
-	// Set up an event listener for mouse movement to update the circle's position
 	this.bindMouseEvents();
   }
 
