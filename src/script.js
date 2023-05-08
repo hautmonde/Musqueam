@@ -9,6 +9,7 @@ import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtil
 //import { GUI } from 'dat.gui'
 import { InteractionManager } from 'three.interactive';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import CircleProjector from './scripts/circleProjector';
 
 
 // !————————1. Setup
@@ -23,8 +24,7 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 // Containers
-let container;
-container = document.createElement( 'div' );
+let container = document.createElement( 'div' );
 document.body.appendChild( container );
 
 // Screen Setup
@@ -34,7 +34,7 @@ let windowHalfY = window.innerHeight / 2;
 
 const sizes = {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
 }
 
 // Managers
@@ -200,7 +200,6 @@ function updateSunPosition(){
 }
 
 
-// !————————Lights
 
 // const pointLightSun = new THREE.PointLight( 0xffffcc, .5, 2000 );
 // pointLightSun.position.set( 10, 10, 10 );
@@ -259,6 +258,10 @@ const testMaterial = new THREE.MeshBasicMaterial()
 testMaterial.color = new THREE.Color(0xff0000)
 
 
+const cursorCircleRadius = 1; 
+const cursorCircleSegments = 32; 
+const cursorCircleGeometry = new THREE.CircleBufferGeometry(cursorCircleRadius, cursorCircleSegments);
+const cursorCircleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
 
 
@@ -284,6 +287,8 @@ testMaterial.color = new THREE.Color(0xff0000)
 // !————————4. Objects
 
 let landscapeMesh;
+
+// Cursor Circle
 
 
 
@@ -376,6 +381,8 @@ async function initLandscape() {
     placeObjectOnMesh(sphere1, landscapeMesh, 20, -10);
     placeObjectOnMesh(sphere2, landscapeMesh, 0, 0);
     placeObjectOnMesh(sphere3, landscapeMesh, -20, 10);
+    
+    createCursor();
   } catch (error) {
     console.error("Error loading landscape:", error);
   }
@@ -510,6 +517,13 @@ function onMouseMove(event) {
         document.querySelector(".hover").classList.remove("hover");
     }
 }
+
+function createCursor(){
+  const circleProjector = new CircleProjector(scene, camera, landscapeMesh);
+}
+
+
+
 
 
 
