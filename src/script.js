@@ -8,16 +8,10 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 //import { GUI } from 'dat.gui'
 import { InteractionManager } from 'three.interactive';
-
-// 1. Set up the scene, camera, and renderer
-// 2. Create and add lights
-// 3. Load textures and materials
-// 4. Create and add objects (geometries and meshes)
-// 5. Set up controls and user interactions (such as mouse and keyboard events)
-// 6. Implement animation and rendering logic in the main loop
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 
-// !————————Setup
+// !————————1. Setup
 
 // Debug
 const gui = new dat.GUI()
@@ -28,11 +22,7 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
-// Manager
-
 // Containers
-let landscapeMesh;
-
 let container;
 container = document.createElement( 'div' );
 document.body.appendChild( container );
@@ -47,361 +37,22 @@ const sizes = {
     height: window.innerHeight
 }
 
+// Managers
+
+const manager = new THREE.LoadingManager();
+
 // Gravity
 
 const gravityRay = new THREE.Raycaster();
 const gravityDirection = new THREE.Vector3(0, -1, 0);
 
-// Set the initial time of day
+// Time
+
 let timeOfDay = .3;
 
+// Fog
 
-
-
-
-// Spheres
-
-const sphere1 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
-scene.add(sphere1);
-
-const sphere2 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
-scene.add(sphere2);
-
-const sphere3 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x0000ff }));
-scene.add(sphere3);
-
-sphere1.name = "Sphere 1";
-sphere2.name = "Sphere 2";
-sphere3.name = "Sphere 3";
-
-// clickableObjects.push(sphere1);
-// clickableObjects.push(sphere2);
-// clickableObjects.push(sphere3);
-
-
-
-
-
-
-
-
-// UI Raycaster etc
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const clickableObjects = [];
-
-document.addEventListener("mousemove", onMouseMove);
-
-function onMouseMove(event) {
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-
-    const intersects = raycaster.intersectObjects(scene.children);
-    let hoveredObject;
-
-    for (const intersect of intersects) {
-        if (spheresArray.includes(intersect.object)) {
-            hoveredObject = intersect.object;
-            break;
-        }
-    } 
-
-    if (hoveredObject) {
-      //console.log('hover');
-        hoverState(hoveredObject);
-    } else {
-        // document.querySelector(".hover").classList.remove("hover");
-    }
-}
-
-function hoverState(object) {
-//     const label1 = document.querySelector(".label1");
-//     label1.style.display = "block";
-//     const screenPos = object.position.clone().project(camera);
-//     const x = (screenPos.x * window.innerWidth) / 2 + window.innerWidth / 2;
-//     const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
-// 
-//     label1.style.left = label1.offsetWidth + x + "px";
-//     label1.style.top = y + "px";
-
-  const sphereNumber = parseInt(object.name.match(/\d+$/)[0], 10);  
-  document.querySelector(".label" + sphereNumber ).classList.add("hover");
-}
-
-const spheresArray = [sphere1, sphere2, sphere3];
-
-function updateLabels(spheres) {
-  const numElements = 3;
-  const labels = [];
-
-  // Populate spheres and labels arrays
-  for (let i = 1; i <= numElements; i++) {
-    labels.push(document.querySelector(".label" + i));
-  }
-  
-  //const spheres = [sphere1, sphere2, sphere3];
-
-  
-  // Update labels' positions
-  for (let i = 0; i < spheres.length; i++) {
-    
-    if (!spheres[i]) {
-      //console.error('Sphere at index', i, 'is undefined');
-      continue;
-    }
-
-    
-    labels[i].style.display = "block";
-
-    const screenPos = spheres[i].position.clone().project(camera);
-
-    const x = (screenPos.x * window.innerWidth) / 2 + window.innerWidth / 2;
-    const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
-
-    labels[i].style.left = (x - labels[i].offsetWidth / 2) + "px";
-    labels[i].style.top = (y - labels[i].offsetHeight) + "px";
-  }
-}
-
-// function onClick(event) {
-//   event.preventDefault();
-// 
-//   // Convert the mouse position to normalized device coordinates
-//   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-//   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-// 
-//   // Update the picking ray with the camera and mouse position
-//   raycaster.setFromCamera(mouse, camera);
-// 
-//   // Calculate objects intersecting the picking ray
-//   const intersects = raycaster.intersectObjects(clickableObjects);
-// 
-//   if (intersects.length > 0) {
-//     const intersectedObject = intersects[0].object;
-// 
-//     // Calculate the position of the sphere in screen coordinates
-//     const screenPos = intersectedObject.position.clone().project(camera);
-//     screenPos.x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
-//     screenPos.y = (1 - (screenPos.y * 0.5 + 0.5)) * window.innerHeight;
-// 
-//     // Show the tooltip with text above the sphere
-//     showTooltip(intersectedObject.name, screenPos.x, screenPos.y);
-//   }
-// }
-// 
-// function checkForHover() {
-//   
-// }
-
-
-
-// function showTooltip(text, x, y) {
-//   let tooltip = document.getElementById("tooltip");
-//   if (!tooltip) {
-//     tooltip = document.createElement("div");
-//     tooltip.id = "tooltip";
-//     tooltip.className = "tooltip";
-//     document.body.appendChild(tooltip);
-//   }
-//   tooltip.style.left = x + "px";
-//   tooltip.style.top = y + "px";
-//   tooltip.textContent = text;
-//   tooltip.style.display = "block";
-// }
-
-
-function createRayHelper(raycaster) {
-  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-  const geometry = new THREE.BufferGeometry().setFromPoints([
-    raycaster.ray.origin,
-    raycaster.ray.origin.clone().add(raycaster.ray.direction.clone().multiplyScalar(1000)),
-  ]);
-  return new THREE.Line(geometry, material);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-// New function to get the highest vertex y-value of the landscape
-function getHighestVertexY(mesh) {
-    let highestY = -Infinity;
-    const vertices = mesh.geometry.attributes.position.array;
-
-    for (let i = 1; i < vertices.length; i += 3) {
-        if (vertices[i] > highestY) {
-            highestY = vertices[i];
-        }
-    }
-    return highestY;
-}
-
-// function placeObjectOnMesh(object, mesh, x, z) {
-//     // Set the object's initial position above the highest vertex of the landscape
-//     const highestY = getHighestVertexY(mesh);
-//     object.position.set(x, highestY + 15, z);
-// 
-//     // Update the raycaster's origin to match the object's position
-//     gravityRay.set(object.position, gravityDirection);
-// 
-//     // Perform raycasting to find intersections between the object and the mesh
-//     const intersects = gravityRay.intersectObject(mesh);
-// 
-//     // If there's an intersection, update the object's y position
-//     if (intersects.length > 0) {
-//         object.position.y = intersects[0].point.y + mesh.position.y;
-//     } else {
-//         console.error('No intersection found. Ensure the object is above the mesh.');
-//     }
-// }
-
-function placeObjectOnMesh(object, mesh, x, z) {
-  object.position.set(x, 5, z);
-  const raycaster = new THREE.Raycaster();
-  raycaster.set(object.position.clone().add(new THREE.Vector3(0, 500, 0)), new THREE.Vector3(0, -1, 0));
-  
-  // Add a line representing the raycaster's ray to the scene
-  const rayHelper = createRayHelper(raycaster);
-  scene.add(rayHelper);
-
-  const intersects = raycaster.intersectObject(mesh);
-  if (intersects.length > 0) {
-    object.position.y = intersects[0].point.y;
-    mesh.add(object);
-  } else {
-    console.error("No intersection found for object:", object);
-  }
-}
-
-
-
-
-
-
-
-
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-
-// async function initLandscape() {
-//   try {
-//     const gltfLoader = new GLTFLoader();
-//     const textureLoader = new THREE.TextureLoader();
-// 
-//     // Load the texture
-//     const texture = textureLoader.load("textures/test2b.JPG");
-//     texture.wrapS = THREE.RepeatWrapping;
-//     texture.wrapT = THREE.RepeatWrapping;
-//     texture.anisotropy = 16;
-// 
-//     // Load the model
-//     gltfLoader.load("models/obj/test2/test3.glb", (gltf) => {
-//       const landscape = gltf.scene;
-//       console.log("loaded mode");
-//       landscape.traverse((child) => {
-//         if (child.isMesh) {
-//           child.material.map = texture;
-//           child.material.needsUpdate = true;
-//           child.material.flatShading = false;
-// 
-//           child.geometry.deleteAttribute("normal");
-//           child.geometry = BufferGeometryUtils.mergeVertices(child.geometry);
-//           child.geometry.computeVertexNormals();
-//           child.castShadow = true; //default is false
-//           child.receiveShadow = true; //default
-//           landscapeMesh = child;
-//         }
-//       });
-// 
-//       landscape.position.set(0,-15,0); // -15
-//       scene.add(landscape);
-// 
-//       // Place the spheres on the landscape after it is added to the scene
-//       placeObjectOnMesh(sphere1, landscapeMesh, 3, 3);
-//       placeObjectOnMesh(sphere2, landscapeMesh, -3, -3);
-//       placeObjectOnMesh(sphere3, landscapeMesh, 13, -23);
-//     }, undefined, (error) => {
-//       console.error("Error loading landscape:", error);
-//     });
-// 
-//   } catch (error) {
-//     console.error("Error in initLandscape:", error);
-//   }
-// }
-
-const manager = new THREE.LoadingManager();
-
-function loadTheModel(url) {
-  return new Promise((resolve, reject) => {
-    const loader = new GLTFLoader(manager);
-    loader.load(
-      url,
-      (gltf) => {
-        resolve(gltf.scene);
-      },
-      onProgress,
-      (error) => {
-        reject(error);
-      }
-    );
-  });
-}
-
-// Function to initialize the landscape and place spheres
-async function initLandscape() {
-  try {
-    const landscape = await loadTheModel("models/test4.glb");
-    landscape.traverse((child) => {
-      if (child.isMesh) {
-        child.material.map = texture;
-        child.material.flatShading = false;
-
-        child.geometry.deleteAttribute("normal");
-        child.geometry = BufferGeometryUtils.mergeVertices(child.geometry);
-        child.geometry.computeVertexNormals();
-        child.castShadow = true; //default is false
-        child.receiveShadow = true; //default
-        //child.scale.set(1, 1, 1);
-        landscapeMesh = child;
-        // Adjust the position of the mesh
-        //landscapeMesh.position.y = -15;
-      }
-    });
-
-    //landscape.position.y = -15; 
-    scene.add(landscape);
-    
-    const wireframe = new THREE.WireframeGeometry(landscapeMesh.geometry);
-    const line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xff0000 }));
-    line.position.copy(landscapeMesh.position);
-    line.rotation.copy(landscapeMesh.rotation);
-    scene.add(line);
-    
-    // Place the spheres on the landscape after it is added to the scene
-    placeObjectOnMesh(sphere1, landscapeMesh, 3, 3);
-    placeObjectOnMesh(sphere2, landscapeMesh, -2, 2);
-    placeObjectOnMesh(sphere3, landscapeMesh, 1, -1);
-  } catch (error) {
-    console.error("Error loading landscape:", error);
-  }
-}
-
-initLandscape();
-
-
-
-
+scene.fog = new THREE.Fog( 0xcccccc, 25, 100 );
 
 
 // Resize window
@@ -421,74 +72,7 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-document.addEventListener( 'mousemove', onDocumentMouseMove );
 
-
-
-
-
-// !————————Objects, Mats
-
-// Objects
-const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
-
-// Materials
-
-const material = new THREE.MeshBasicMaterial()
-material.color = new THREE.Color(0xff0000)
-
-// Mesh
-const sphere = new THREE.Mesh(geometry,material)
-sphere.castShadow = true; //default is false
-sphere.receiveShadow = false; //default
-sphere.scale.set(2,2,2)
-scene.add(sphere)
-
-// texture
-
-const textureLoader = new THREE.TextureLoader( manager );
-const texture = textureLoader.load( 'textures/test2b.JPG' );
-
-
-
-
-
-// !————————Lights
-
-// const pointLightSun = new THREE.PointLight( 0xffffcc, .5, 2000 );
-// pointLightSun.position.set( 10, 10, 10 );
-// pointLightSun.rotation.set( 0, Math.PI, 0 );
-// 
-// pointLightSun.castShadow = true; // default false
-// 
-// //Set up shadow properties for the light
-// pointLightSun.shadow.mapSize.width = 512; // default
-// pointLightSun.shadow.mapSize.height = 512; // default
-// pointLightSun.shadow.camera.near = 0.5; // default
-// pointLightSun.shadow.camera.far = 500; // default
-// 
-// 
-// scene.add( pointLightSun );
-// 
-// const sphereSize = 1;
-// const pointLightSunHelper = new THREE.PointLightHelper( pointLightSun, sphereSize );
-// scene.add( pointLightSunHelper );
-// 
-// const ambientLight = new THREE.AmbientLight( 0xcccccc );
-// ambientLight.intensity = 1.3;
-// scene.add( ambientLight );
-// 
-// let sunSpeed = .3;
-
-
-// Create a directional light (sun)
-const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-sunLight.position.set(0, 10, 0);
-scene.add(sunLight);
-
-// Create an ambient light
-const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-scene.add(ambientLight);
 
 
 
@@ -513,98 +97,6 @@ scene.add(camera)
 
 
 
-// !————————Control
-
-let cameraMoveEnabled = true;
-
-function onDocumentMouseMove( event ) {
-    mouseX = ( event.clientX - windowHalfX ) / 2;
-    mouseY = ( event.clientY - windowHalfY ) / 2;
-}
-
-// Key Listener
-document.addEventListener("keydown", onDocumentKeyDown, false);
-function onDocumentKeyDown(event) {
-    let keyCode = event.which;
-    if (keyCode == 32) {
-        cameraMoveEnabled = !cameraMoveEnabled;
-    }
-}
-
-
-
-
-
-// Loading
-
-function onProgress( xhr ) {
-
-    if ( xhr.lengthComputable ) {
-
-        const percentComplete = xhr.loaded / xhr.total * 100;
-        console.log( 'model ' + Math.round( percentComplete, 2 ) + '% downloaded' );
-    }
-}
-
-function onError() {}
-
-
-
-
-
-
-
-
-// !————————Fog
-
-
-scene.fog = new THREE.Fog( 0xcccccc, 25, 100 );
-
-
-
-
-
-
-
-// !————————Data
-
-// const datSunLightsFolder = gui.addFolder('SunLight')
-// datSunLightsFolder.add(pointLightSun.position, 'x', -100, 100)
-// datSunLightsFolder.add(pointLightSun.position, 'y', -30, 100)
-// datSunLightsFolder.add(pointLightSun.position, 'z', -100, 100)
-// datSunLightsFolder.add(pointLightSun, 'intensity', 0, 2)
-// datSunLightsFolder.open()
-// 
-// const datAmbientLightsFolder = gui.addFolder('AmbientLight')
-// datAmbientLightsFolder.add(ambientLight.position, 'x', -50, 50)
-// datAmbientLightsFolder.add(ambientLight.position, 'y', 0, 50)
-// datAmbientLightsFolder.add(ambientLight.position, 'z', 0, 50)
-// datAmbientLightsFolder.add(ambientLight, 'intensity', 0, 2)
-// datAmbientLightsFolder.open()
-
-const datCameraFolder = gui.addFolder('Camera')
-datCameraFolder.add(camera.position, 'x', -100, 100)
-datCameraFolder.add(camera.position, 'y', 0, 100)
-datCameraFolder.add(camera.position, 'z', 0, 50)
-datCameraFolder.open()
-
-
-// Controls
-const controls = new OrbitControls(camera, canvas)
-//const controls = new MapControls( camera, canvas );
-controls.enableDamping = true
-controls.dollyDistance = camera.position.distanceTo(controls.target);
-
-
-function updateOrbitControlsTarget() {
-  const cameraDirection = new THREE.Vector3();
-  camera.getWorldDirection(cameraDirection);
-  const distance = 10; // The distance from the camera to the target point
-  const target = camera.position.clone().add(cameraDirection.multiplyScalar(distance));
-  controls.target.copy(target);
-}
-
-
 
 // !————————Renderer
 
@@ -625,8 +117,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
 
-
-
+// !———————— World Setup
 
 // Create a separate canvas for the gradient texture
 const gradientCanvas = document.createElement("canvas");
@@ -668,6 +159,582 @@ function updateGradientBackground(angle, canvas, context) {
 
 
 
+// !————————2. Lighting
+
+// Create a directional light (sun)
+const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+sunLight.position.set(0, 10, 0);
+scene.add(sunLight);
+
+// Create an ambient light
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+scene.add(ambientLight);
+
+function updateSunPosition(){
+  const elapsedTime = clock.getElapsedTime()
+  
+   // Rotate the sun
+   const sunRadius = 100;
+   const angle = timeOfDay * Math.PI * 2;
+   sunLight.position.set(
+     sunRadius * Math.cos(angle),
+     sunRadius * Math.sin(angle),
+     0
+   );
+   
+   // Update the gradient background on the gradientCanvas
+   updateGradientBackground(angle, gradientCanvas, gradientContext);
+   
+   // Apply the updated gradient background as a texture
+   scene.background = new THREE.CanvasTexture(gradientCanvas);
+   
+   const fogIntensity = 0.5 + 0.5 * Math.sin(angle);
+   scene.fog.color.setHSL(0.1, 0.25, fogIntensity);
+   
+    
+    // Update time of day
+    timeOfDay += 0.00001; // .001
+    if (timeOfDay >= 1) {
+      timeOfDay = 0;
+    }
+}
+
+
+// !————————Lights
+
+// const pointLightSun = new THREE.PointLight( 0xffffcc, .5, 2000 );
+// pointLightSun.position.set( 10, 10, 10 );
+// pointLightSun.rotation.set( 0, Math.PI, 0 );
+// 
+// pointLightSun.castShadow = true; // default false
+// 
+// //Set up shadow properties for the light
+// pointLightSun.shadow.mapSize.width = 512; // default
+// pointLightSun.shadow.mapSize.height = 512; // default
+// pointLightSun.shadow.camera.near = 0.5; // default
+// pointLightSun.shadow.camera.far = 500; // default
+// 
+// 
+// scene.add( pointLightSun );
+// 
+// const sphereSize = 1;
+// const pointLightSunHelper = new THREE.PointLightHelper( pointLightSun, sphereSize );
+// scene.add( pointLightSunHelper );
+// 
+// const ambientLight = new THREE.AmbientLight( 0xcccccc );
+// ambientLight.intensity = 1.3;
+// scene.add( ambientLight );
+// 
+// let sunSpeed = .3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// !————————3. Load textures and mats
+
+const textureLoader = new THREE.TextureLoader( manager );
+const texture = textureLoader.load( 'textures/test2b.JPG' );
+
+const testMaterial = new THREE.MeshBasicMaterial()
+testMaterial.color = new THREE.Color(0xff0000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// !————————4. Objects
+
+let landscapeMesh;
+
+
+
+// Test Torus
+
+const torusGeometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
+
+const torus = new THREE.Mesh(torusGeometry, testMaterial)
+torus.castShadow = true; //default is false
+torus.receiveShadow = false; //default
+torus.scale.set(2,2,2)
+torus.position.set(0,15,0)
+scene.add(torus)
+
+
+// Spheres
+
+const sphere1 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
+scene.add(sphere1);
+
+const sphere2 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
+scene.add(sphere2);
+
+const sphere3 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x0000ff }));
+scene.add(sphere3);
+
+sphere1.name = "Sphere 1";
+sphere2.name = "Sphere 2";
+sphere3.name = "Sphere 3";
+
+const spheresArray = [sphere1, sphere2, sphere3];
+
+// clickableObjects.push(sphere1);
+// clickableObjects.push(sphere2);
+// clickableObjects.push(sphere3);
+
+
+
+
+// Loading Functions
+
+function loadTheModel(url) {
+  return new Promise((resolve, reject) => {
+    const loader = new GLTFLoader(manager);
+    loader.load(
+      url,
+      (gltf) => {
+        resolve(gltf.scene);
+      },
+      onProgress,
+      (error) => {
+        reject(error);
+      }
+    );
+  });
+}
+
+// Function to initialize the landscape and place spheres
+async function initLandscape() {
+  try {
+    const landscape = await loadTheModel("models/test4.glb");
+    landscape.traverse((child) => {
+      if (child.isMesh) {
+        child.material.map = texture;
+        child.material.flatShading = false;
+        child.geometry.deleteAttribute("normal");
+        child.geometry = BufferGeometryUtils.mergeVertices(child.geometry);
+        child.geometry.computeVertexNormals();
+        child.castShadow = true; //default is false
+        child.receiveShadow = true; //default
+        //child.scale.set(1, 1, 1);
+        landscapeMesh = child;
+        // Adjust the position of the mesh
+        //landscapeMesh.position.y = -15;
+      }
+    });
+
+    //landscape.position.y = -15; 
+    scene.add(landscape);
+    
+    
+    // DEBUG: Show mesh of landscape
+    // const wireframe = new THREE.WireframeGeometry(landscapeMesh.geometry);
+    // const line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color: 0xff0000 }));
+    // line.position.copy(landscapeMesh.position);
+    // line.rotation.copy(landscapeMesh.rotation);
+    // scene.add(line);
+    
+    // Place the spheres on the landscape after it is added to the scene
+    placeObjectOnMesh(sphere1, landscapeMesh, 20, -10);
+    placeObjectOnMesh(sphere2, landscapeMesh, 0, 0);
+    placeObjectOnMesh(sphere3, landscapeMesh, -20, 10);
+  } catch (error) {
+    console.error("Error loading landscape:", error);
+  }
+}
+
+
+function placeObjectOnMesh(object, mesh, x, z) {
+  object.position.set(x, 5, z);
+  const raycasterSpheresOnMap = new THREE.Raycaster();
+  raycasterSpheresOnMap.set(object.position.clone().add(new THREE.Vector3(0, 500, 0)), new THREE.Vector3(0, -1, 0));
+  
+  // Add a line representing the raycaster's ray to the scene
+  //const rayHelper = createRayHelper(raycaster);
+  //scene.add(rayHelper);
+
+  const intersects = raycasterSpheresOnMap.intersectObject(mesh);
+  if (intersects.length > 0) {
+    object.position.y = intersects[0].point.y;
+    mesh.add(object);
+  } else {
+    console.error("No intersection found for object:", object);
+  }
+}
+
+
+
+initLandscape();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// !————————5. Controls
+
+// Controls
+const controls = new OrbitControls(camera, canvas)
+//const controls = new MapControls( camera, canvas );
+controls.enableDamping = true
+controls.dollyDistance = camera.position.distanceTo(controls.target);
+
+
+function updateOrbitControlsTarget() {
+  const cameraDirection = new THREE.Vector3();
+  camera.getWorldDirection(cameraDirection);
+  const distance = 10; // The distance from the camera to the target point
+  const target = camera.position.clone().add(cameraDirection.multiplyScalar(distance));
+  controls.target.copy(target);
+}
+
+
+document.addEventListener( 'mousemove', onDocumentMouseMove );
+
+
+
+// RAYCASTERS AND MOUSE
+
+const raycasterFromCamera = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const clickableObjects = [];
+
+document.addEventListener("mousemove", onMouseMove);
+
+
+let cameraMoveEnabled = true;
+
+function onDocumentMouseMove( event ) {
+    mouseX = ( event.clientX - windowHalfX ) / 2;
+    mouseY = ( event.clientY - windowHalfY ) / 2;
+}
+
+// Key Listener
+
+document.addEventListener("keydown", onDocumentKeyDown, false);
+
+
+
+// Handlers
+
+function onDocumentKeyDown(event) {
+    let keyCode = event.which;
+    if (keyCode == 32) {
+        cameraMoveEnabled = !cameraMoveEnabled;
+    }
+}
+
+function onMouseMove(event) {
+    event.preventDefault();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycasterFromCamera.setFromCamera(mouse, camera);
+
+    const intersects = raycasterFromCamera.intersectObjects(scene.children, true);
+
+    let hoveredObject;
+    
+    for (const intersect of intersects) {
+        if (spheresArray.includes(intersect.object)) {
+            hoveredObject = intersect.object;
+            break;
+        }
+    } 
+
+    if (hoveredObject) {
+      console.log('hover');
+        hoverState(hoveredObject);
+    } else if (document.querySelector(".hover")) {
+        document.querySelector(".hover").classList.remove("hover");
+    }
+}
+
+
+
+
+
+
+// Events
+
+function hoverState(object) {
+//     const label1 = document.querySelector(".label1");
+//     label1.style.display = "block";
+//     const screenPos = object.position.clone().project(camera);
+//     const x = (screenPos.x * window.innerWidth) / 2 + window.innerWidth / 2;
+//     const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
+// 
+//     label1.style.left = label1.offsetWidth + x + "px";
+//     label1.style.top = y + "px";
+
+  const sphereNumber = parseInt(object.name.match(/\d+$/)[0], 10);  
+  document.querySelector(".label" + sphereNumber ).classList.add("hover");
+}
+
+
+
+
+// function onClick(event) {
+//   event.preventDefault();
+// 
+//   // Convert the mouse position to normalized device coordinates
+//   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+//   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+// 
+//   // Update the picking ray with the camera and mouse position
+//   raycaster.setFromCamera(mouse, camera);
+// 
+//   // Calculate objects intersecting the picking ray
+//   const intersects = raycaster.intersectObjects(clickableObjects);
+// 
+//   if (intersects.length > 0) {
+//     const intersectedObject = intersects[0].object;
+// 
+//     // Calculate the position of the sphere in screen coordinates
+//     const screenPos = intersectedObject.position.clone().project(camera);
+//     screenPos.x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+//     screenPos.y = (1 - (screenPos.y * 0.5 + 0.5)) * window.innerHeight;
+// 
+//     // Show the tooltip with text above the sphere
+//     showTooltip(intersectedObject.name, screenPos.x, screenPos.y);
+//   }
+// }
+// 
+// function checkForHover() {
+//   
+// }
+
+// function showTooltip(text, x, y) {
+//   let tooltip = document.getElementById("tooltip");
+//   if (!tooltip) {
+//     tooltip = document.createElement("div");
+//     tooltip.id = "tooltip";
+//     tooltip.className = "tooltip";
+//     document.body.appendChild(tooltip);
+//   }
+//   tooltip.style.left = x + "px";
+//   tooltip.style.top = y + "px";
+//   tooltip.textContent = text;
+//   tooltip.style.display = "block";
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// !————————6. Handlers & Logic
+
+
+function updateLabelPositions(spheres) {
+  const numElements = 3;
+  const labels = [];
+
+  // Populate spheres and labels arrays
+  for (let i = 1; i <= numElements; i++) {
+    labels.push(document.querySelector(".label" + i));
+  }
+  
+  //const spheres = [sphere1, sphere2, sphere3];
+
+  
+  // Update labels' positions
+  for (let i = 0; i < spheres.length; i++) {
+    
+    if (!spheres[i]) {
+      //console.error('Sphere at index', i, 'is undefined');
+      continue;
+    }
+
+    
+    labels[i].style.display = "block";
+
+    const screenPos = spheres[i].position.clone().project(camera);
+
+    const x = (screenPos.x * window.innerWidth) / 2 + window.innerWidth / 2;
+    const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
+
+    labels[i].style.left = (x - labels[i].offsetWidth / 2) + "px";
+    labels[i].style.top = (y - labels[i].offsetHeight) + "px";
+  }
+}
+
+
+
+
+
+
+
+
+
+
+// !————————7. Utility Classes
+
+// New function to get the highest vertex y-value of the landscape
+function getHighestVertexY(mesh) {
+    let highestY = -Infinity;
+    const vertices = mesh.geometry.attributes.position.array;
+
+    for (let i = 1; i < vertices.length; i += 3) {
+        if (vertices[i] > highestY) {
+            highestY = vertices[i];
+        }
+    }
+    return highestY;
+}
+
+function createRayHelper(raycaster) {
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    raycaster.ray.origin,
+    raycaster.ray.origin.clone().add(raycaster.ray.direction.clone().multiplyScalar(1000)),
+  ]);
+  return new THREE.Line(geometry, material);
+}
+
+// Loading Functions
+
+function onProgress( xhr ) {
+
+    if ( xhr.lengthComputable ) {
+
+        const percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( 'model ' + Math.round( percentComplete, 2 ) + '% downloaded' );
+    }
+}
+
+function onError() {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // !————————Clock Animation
 
 const clock = new THREE.Clock()
@@ -675,34 +742,9 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
 
-    const elapsedTime = clock.getElapsedTime()
-
-     // Rotate the sun
-     const sunRadius = 100;
-     const angle = timeOfDay * Math.PI * 2;
-     sunLight.position.set(
-       sunRadius * Math.cos(angle),
-       sunRadius * Math.sin(angle),
-       0
-     );
+    updateSunPosition();
      
     
-    
-    // Update the gradient background on the gradientCanvas
-    updateGradientBackground(angle, gradientCanvas, gradientContext);
-    
-    // Apply the updated gradient background as a texture
-    scene.background = new THREE.CanvasTexture(gradientCanvas);
-    
-    const fogIntensity = 0.5 + 0.5 * Math.sin(angle);
-    scene.fog.color.setHSL(0.1, 0.25, fogIntensity);
-    
-     
-     // Update time of day
-     timeOfDay += 0.00001; // .001
-     if (timeOfDay >= 1) {
-       timeOfDay = 0;
-     }
     //pointLightSun.position.x = 80*Math.cos(elapsedTime * sunSpeed) + 0;
     //pointLightSun.position.y = 80*Math.sin(elapsedTime * sunSpeed ) + 0;
     
@@ -714,7 +756,7 @@ const tick = () =>
     // Update Orbital Controls
     controls.update()
     
-    updateLabels(spheresArray);
+    updateLabelPositions(spheresArray);
     
     if (cameraMoveEnabled) {
         // camera.position.x += ( mouseX - camera.position.x ) * .05;
@@ -731,3 +773,27 @@ const tick = () =>
 }
 
 tick()
+
+
+
+// !———————— Debug
+
+// const datSunLightsFolder = gui.addFolder('SunLight')
+// datSunLightsFolder.add(pointLightSun.position, 'x', -100, 100)
+// datSunLightsFolder.add(pointLightSun.position, 'y', -30, 100)
+// datSunLightsFolder.add(pointLightSun.position, 'z', -100, 100)
+// datSunLightsFolder.add(pointLightSun, 'intensity', 0, 2)
+// datSunLightsFolder.open()
+// 
+// const datAmbientLightsFolder = gui.addFolder('AmbientLight')
+// datAmbientLightsFolder.add(ambientLight.position, 'x', -50, 50)
+// datAmbientLightsFolder.add(ambientLight.position, 'y', 0, 50)
+// datAmbientLightsFolder.add(ambientLight.position, 'z', 0, 50)
+// datAmbientLightsFolder.add(ambientLight, 'intensity', 0, 2)
+// datAmbientLightsFolder.open()
+
+const datCameraFolder = gui.addFolder('Camera')
+datCameraFolder.add(camera.position, 'x', -100, 100)
+datCameraFolder.add(camera.position, 'y', 0, 100)
+datCameraFolder.add(camera.position, 'z', 0, 50)
+datCameraFolder.open()
