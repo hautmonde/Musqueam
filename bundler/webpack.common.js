@@ -2,6 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin')
 const path = require('path')
+const glob = require('glob')
 
 module.exports = {
     entry: path.resolve(__dirname, '../src/script.js'),
@@ -18,10 +19,11 @@ module.exports = {
                 { from: path.resolve(__dirname, '../static') }
             ]
         }),
-        new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, '../src/index.html'),
+        ...glob.sync('./src/*.html').map((fileName) => new HtmlWebpackPlugin({
+            template: fileName,
+            filename: path.basename(fileName),
             minify: true
-        }),
+        })),
         new MiniCSSExtractPlugin()
     ],
     module:
