@@ -15,8 +15,8 @@ import {
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
 //    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
 
-var minPan = new Vector3( - 40, 0, -50 );
-var maxPan = new Vector3( 40, 100, 5 );
+var minPan = new Vector3( - 80, 0, -80 );
+var maxPan = new Vector3( 80, 100, 80 );
 //let dollySpeed = 0.1; // Adjust this value to control the dolly speed
 
 var OrbitControls = function ( object, domElement ) {
@@ -75,7 +75,7 @@ var OrbitControls = function ( object, domElement ) {
 
 	// Set to false to disable panning
 	this.enablePan = true;
-	this.panSpeed = 2.5;
+	this.panSpeed = 5.5;
 	this.screenSpacePanning = true; // if false, pan orthogonal to world-space direction camera.up
 	this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
 

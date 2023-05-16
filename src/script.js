@@ -1,8 +1,8 @@
-import './style.css'
+import './styles.scss'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-//import { OrbitControls } from './CustomOrbitControls.js';
-//import { MapControls } from './CustomOrbitControls.js';
+//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { OrbitControls } from './CustomOrbitControls.js';
+import { MapControls } from './CustomOrbitControls.js';
 import * as dat from 'dat.gui'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -49,10 +49,13 @@ const gravityDirection = new THREE.Vector3(0, -1, 0);
 // Time
 
 let timeOfDay = .3;
+let timeIncrement = .001;
+let fogDistanceMin = 50;  //25
+let fogDistanceMax = 200; //100
 
 // Fog
 
-scene.fog = new THREE.Fog( 0xcccccc, 25, 100 );
+scene.fog = new THREE.Fog( 0xcccccc, fogDistanceMin, fogDistanceMax );
 
 
 // Resize window
@@ -73,6 +76,47 @@ window.addEventListener('resize', () =>
 })
 
 
+// !--------Data
+
+const stories = [
+  {
+    siteNumber: 1,
+    title: 'Weaving',
+    path: '/story-weaving.html',
+    x: 15,
+    z: 10
+  },
+  {
+    siteNumber: 2,
+    title: 'The Secret Garden',
+    path: '/story-test2.html',
+    x: -15,
+    z: 5
+  },
+  {
+    siteNumber: 3,
+    title: 'The Time Machine',
+    path: '/story-test3.html',
+    x: 0,
+    z: -10
+  },
+  {
+    siteNumber: 4,
+    title: 'The Time Machine',
+    path: '/story-test3.html',
+    x: 0,
+    z: -10
+  },
+  {
+    siteNumber: 5,
+    title: 'The Time Machine',
+    path: '/story-test3.html',
+    x: 0,
+    z: -10
+  },
+  // add more stories here
+];
+
 
 
 
@@ -87,7 +131,7 @@ window.addEventListener('resize', () =>
 // Base camera
 //const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 // New one
-const camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 1, 2000 );
+const camera = new THREE.PerspectiveCamera( 65, window.innerWidth / window.innerHeight, 1, 2000 );
 camera.position.z = 15;
 camera.position.x = 0
 camera.position.y = 40
@@ -163,7 +207,14 @@ function updateGradientBackground(angle, canvas, context) {
 
 // Create a directional light (sun)
 const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-sunLight.position.set(0, 10, 0);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.width = 512; // default
+sunLight.shadow.mapSize.height = 512; // default
+sunLight.shadow.camera.near = 0.5; // default
+sunLight.shadow.camera.far = 500; // default
+sunLight.position.set(0, 30, 0);
+const sunLightHelper = new THREE.DirectionalLightHelper( sunLight, 10 );
+scene.add(sunLightHelper);
 scene.add(sunLight);
 
 // Create an ambient light
@@ -193,7 +244,7 @@ function updateSunPosition(){
    
     
     // Update time of day
-    timeOfDay += 0.00001; // .001
+    timeOfDay += timeIncrement; // .001
     if (timeOfDay >= 1) {
       timeOfDay = 0;
     }
@@ -294,32 +345,36 @@ let landscapeMesh;
 
 // Test Torus
 
-const torusGeometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
-
-const torus = new THREE.Mesh(torusGeometry, testMaterial)
-torus.castShadow = true; //default is false
-torus.receiveShadow = false; //default
-torus.scale.set(2,2,2)
-torus.position.set(0,15,0)
-scene.add(torus)
+// const torusGeometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
+// 
+// const torus = new THREE.Mesh(torusGeometry, testMaterial)
+// torus.castShadow = true; //default is false
+// torus.receiveShadow = false; //default
+// torus.scale.set(2,2,2)
+// torus.position.set(0,15,0)
+// scene.add(torus)
 
 
 // Spheres
 
-const sphere1 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
-scene.add(sphere1);
+let spheresArray = [];
 
-const sphere2 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
-scene.add(sphere2);
+for (let i = 1; i <= 5; i++) {
+  let color = new THREE.Color(
+    Math.random() * 0.5 + 0.5,
+    Math.random() * 0.5 + 0.5,
+    Math.random() * 0.5 + 0.5
+  );
 
-const sphere3 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x0000ff }));
-scene.add(sphere3);
+  let sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 16, 16),
+    new THREE.MeshStandardMaterial({ color: color })
+  );
 
-sphere1.name = "Sphere 1";
-sphere2.name = "Sphere 2";
-sphere3.name = "Sphere 3";
-
-const spheresArray = [sphere1, sphere2, sphere3];
+  sphere.name = "Sphere " + i;
+  scene.add(sphere);
+  spheresArray.push(sphere);
+}
 
 // clickableObjects.push(sphere1);
 // clickableObjects.push(sphere2);
@@ -378,10 +433,18 @@ async function initLandscape() {
     // scene.add(line);
     
     // Place the spheres on the landscape after it is added to the scene
-    placeObjectOnMesh(sphere1, landscapeMesh, 20, -10);
-    placeObjectOnMesh(sphere2, landscapeMesh, 0, 0);
-    placeObjectOnMesh(sphere3, landscapeMesh, -20, 10);
+    let positions = [
+        {x: 25, z: -10},
+        {x: 0, z: 0},
+        {x: -40, z: 4},
+        {x: 10, z: 2},
+        {x: -20, z: 8},
+    ];
     
+    for (let i = 0; i < spheresArray.length; i++) {
+        placeObjectOnMesh(spheresArray[i], landscapeMesh, positions[i].x, positions[i].z);
+    }
+
     createCursor();
   } catch (error) {
     console.error("Error loading landscape:", error);
@@ -442,8 +505,8 @@ initLandscape();
 // !————————5. Controls
 
 // Controls
-const controls = new OrbitControls(camera, canvas)
-//const controls = new MapControls( camera, canvas );
+//const controls = new OrbitControls(camera, canvas)
+const controls = new MapControls( camera, canvas );
 controls.enableDamping = true
 controls.dollyDistance = camera.position.distanceTo(controls.target);
 
@@ -492,8 +555,18 @@ function onDocumentKeyDown(event) {
     }
 }
 
+const cursor = document.getElementById('cursor');
+
 function onMouseMove(event) {
     event.preventDefault();
+    
+    //update custom cursor pos
+    
+      // cursor.style.left = event.pageX -20 + 'px';
+      // cursor.style.top = event.pageY -20 + 'px';
+
+
+    
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -519,7 +592,7 @@ function onMouseMove(event) {
 }
 
 function createCursor(){
-const circleProjector = new CircleProjector(scene, camera, landscapeMesh );
+  // const circleProjector = new CircleProjector(scene, camera, landscapeMesh );
 }
 
 
@@ -571,27 +644,10 @@ function hoverState(object) {
 //     screenPos.y = (1 - (screenPos.y * 0.5 + 0.5)) * window.innerHeight;
 // 
 //     // Show the tooltip with text above the sphere
-//     showTooltip(intersectedObject.name, screenPos.x, screenPos.y);
+//     console.log(intersectedObject.name);
 //   }
-// }
-// 
-// function checkForHover() {
-//   
 // }
 
-// function showTooltip(text, x, y) {
-//   let tooltip = document.getElementById("tooltip");
-//   if (!tooltip) {
-//     tooltip = document.createElement("div");
-//     tooltip.id = "tooltip";
-//     tooltip.className = "tooltip";
-//     document.body.appendChild(tooltip);
-//   }
-//   tooltip.style.left = x + "px";
-//   tooltip.style.top = y + "px";
-//   tooltip.textContent = text;
-//   tooltip.style.display = "block";
-// }
 
 
 
@@ -611,18 +667,15 @@ function hoverState(object) {
 
 // !————————6. Handlers & Logic
 
+const numElements = 5;
+const labels = [];
+
+// Populate spheres and labels arrays
+for (let i = 1; i <= numElements; i++) {
+  labels.push(document.querySelector(".label" + i));
+}
 
 function updateLabelPositions(spheres) {
-  const numElements = 3;
-  const labels = [];
-
-  // Populate spheres and labels arrays
-  for (let i = 1; i <= numElements; i++) {
-    labels.push(document.querySelector(".label" + i));
-  }
-  
-  //const spheres = [sphere1, sphere2, sphere3];
-
   
   // Update labels' positions
   for (let i = 0; i < spheres.length; i++) {
@@ -631,12 +684,10 @@ function updateLabelPositions(spheres) {
       //console.error('Sphere at index', i, 'is undefined');
       continue;
     }
-
-    
-    labels[i].style.display = "block";
+   
+    //labels[i].style.display = "block";
 
     const screenPos = spheres[i].position.clone().project(camera);
-
     const x = (screenPos.x * window.innerWidth) / 2 + window.innerWidth / 2;
     const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
 
@@ -645,14 +696,35 @@ function updateLabelPositions(spheres) {
   }
 }
 
+
+
 // story loader
 
-function storyLoader(storyref) {
-  
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.label').forEach(element => {
+    element.addEventListener('click', () => {
+      console.log('click');
+      let storyRef = element.dataset.storyref;
+      loadStory(storyRef);
+    })
+  })
+})
+
+document.querySelector('.button-back').addEventListener('click', () => {
+  closeStory();
+  showTriggers();
+})
+
+function loadStory(storyRef) {
+  loadStoryContent(storyRef);
+  document.querySelector(".story-overlay").classList.add('active');
+  document.querySelector(".story-container").classList.add('active');
+  console.log('loadStory');
+  hideTriggers();
 }
 
-function loadStoryContent() {
-  fetch('/story.html')
+function loadStoryContent(storyRef) {
+  fetch(`/${storyRef}.html`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -660,15 +732,118 @@ function loadStoryContent() {
       return response.text();
     })
     .then(data => {
-      document.getElementById('story-content').innerHTML = data;
+      document.getElementById('story-load-container').innerHTML = data;
     })
     .catch(e => {
       console.log('There was a problem with your fetch operation: ' + e.message);
     });
 }
 
-loadStoryContent();
+function closeStory(){
+  document.querySelector(".story-overlay").classList.remove('active');
+  document.querySelector(".story-container").classList.remove('active');
+}
 
+function hideTriggers(){
+  document.querySelectorAll('.label').forEach(element => {
+    element.classList.remove('active');
+  })
+}
+
+function showTriggers(){
+  document.querySelectorAll('.label').forEach(element => {
+    element.classList.add('active');
+  })
+}
+
+// Bottom Navigation
+
+let moonNavBlocks;
+
+document.addEventListener('DOMContentLoaded', () => {
+  moonNavBlocks = Array.from(document.querySelectorAll('.moon-nav-block'));
+  
+  moonNavBlocks.forEach((block, index) => {
+      block.addEventListener('mouseout', function(event) {
+          hideMoonNavLabel();
+      });
+      block.addEventListener('mouseover', function(event) {
+          navStateUpdate(event, index);
+          document.querySelector('.moon-nav-story').classList.remove('hidden');
+      }); 
+  });
+});
+
+function navStateUpdate(event, index) {
+    let hoveredIndex = index;
+    console.log(`Hovered block index: ${hoveredIndex}`);
+
+    moonNavBlocks.forEach((otherBlock, otherIndex) => {
+        otherBlock.className = 'moon-nav-block'; // Reset classes
+
+        let offset = otherIndex - hoveredIndex;
+        console.log(`Other block index: ${otherIndex}, Offset: ${offset}`);
+
+        if (offset === 0) {
+            otherBlock.classList.add('moon-state-center');
+            showNavLabel(hoveredIndex);
+            alignDivs();
+        } else if (offset === 1) {
+            otherBlock.classList.add('moon-state-right-filled-1');
+        } else if (offset === 2) {
+            otherBlock.classList.add('moon-state-right-filled-2');
+        } else if (offset === 3) {
+            otherBlock.classList.add('moon-state-right-filled-3');
+        } else if (offset >= 4) {
+            otherBlock.classList.add('moon-state-right-unfilled');
+        } else if (offset === -1) {
+            otherBlock.classList.add('moon-state-left-filled-1');
+        } else if (offset === -2) {
+            otherBlock.classList.add('moon-state-left-filled-2');
+        } else if (offset === -3) {
+            otherBlock.classList.add('moon-state-left-filled-3');
+        } else if (offset <= -4) {
+            otherBlock.classList.add('moon-state-left-unfilled');
+        }
+    });
+}
+
+function showNavLabel(index){
+ 
+}
+
+function hideMoonNavLabel() {
+  document.querySelector('.moon-nav-story').classList.add('hidden');
+}
+
+function alignDivs() {
+    // Get both elements
+    const moonStateCenter = document.querySelector('.moon-state-center');
+    const moonNavStory = document.querySelector('.moon-nav-story');
+    const moonNavStoryContent = document.querySelector('.moon-nav-story-content');
+
+    // Check if elements exist
+    if (!moonStateCenter || !moonNavStory) {
+        console.error('One or both elements not found');
+        return;
+    }
+
+    // Get the bounding rectangles
+    const moonStateCenterRect = moonStateCenter.getBoundingClientRect();
+    const moonNavStoryRect = moonNavStory.getBoundingClientRect();
+
+    const centerX = moonStateCenterRect.left + moonStateCenterRect.width / 2;
+    const centerY = moonStateCenterRect.top + moonStateCenterRect.height / 2;
+    
+    const storyData = moonStateCenter.getAttribute('data-story');
+    if (storyData) {
+        moonNavStoryContent.textContent = storyData;
+    }
+    
+    moonNavStory.style.position = 'fixed';
+    moonNavStory.style.left = `${centerX - moonNavStoryRect.width / 2}px`;
+    moonNavStory.style.top = `${centerY  - moonNavStoryRect.height - moonNavStoryRect.height / 2}px`;
+}
 
 
 
@@ -734,50 +909,16 @@ function onError() {}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // !————————Clock Animation
 
 const clock = new THREE.Clock()
+
+function init() {
+  document.addEventListener('DOMContentLoaded', () => {
+    navStateUpdate(null, 4);
+  })
+}
+
 
 const tick = () =>
 {
@@ -812,7 +953,12 @@ const tick = () =>
     window.requestAnimationFrame(tick)
 }
 
+
+init()
+
 tick()
+
+
 
 
 

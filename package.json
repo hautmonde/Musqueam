@@ -29,6 +29,8 @@
   "devDependencies": {
     "@types/dat.gui": "^0.7.9",
     "dat.gui": "^0.7.9",
-    "glob": "^10.2.2"
+    "glob": "^10.2.2",
+    "sass": "^1.62.1",
+    "sass-loader": "^13.2.2"
   }
 }
