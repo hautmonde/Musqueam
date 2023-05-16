@@ -65,20 +65,20 @@ module.exports = {
                   'sass-loader'
                 ]
             },
-            // Images
-            {
-                test: /\.(jpg|png|gif|svg)$/,
-                use:
-                [
-                    {
-                        loader: 'file-loader',
-                        options:
-                        {
-                            outputPath: 'assets/images/'
-                        }
-                    }
-                ]
-            },
+           // Images
+           {
+               test: /\.(jpg|png|gif|svg)$/,
+               use: [
+                   {
+                       loader: 'url-loader',
+                       options: {
+                           limit: 8192, // Images smaller than 8KB will be transformed into base64 and inlined
+                           outputPath: 'img/',
+                           name: '[name].[hash].[ext]',
+                       },
+                   },
+               ],
+           },
 
             // Fonts
             {
