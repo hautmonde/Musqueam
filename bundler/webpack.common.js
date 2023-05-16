@@ -16,7 +16,9 @@ module.exports = {
     [
         new CopyWebpackPlugin({
             patterns: [
-                { from: path.resolve(__dirname, '../static') }
+                { from: path.resolve(__dirname, '../static') },
+                { from: 'src/models', to: 'models' },
+                { from: 'src/textures', to: 'textures' },
             ]
         }),
         ...glob.sync('./src/*.html').map((fileName) => new HtmlWebpackPlugin({
