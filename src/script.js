@@ -15,7 +15,7 @@ import CircleProjector from './circleProjector';
 // !————————1. Setup
 
 // Debug
-const gui = new dat.GUI()
+//const gui = new dat.GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -83,7 +83,7 @@ const stories = [
     siteNumber: 1,
     title: 'Weaving',
     path: '/story-weaving.html',
-    x: 15,
+    x: 125,
     z: 10
   },
   {
@@ -381,8 +381,6 @@ for (let i = 1; i <= 5; i++) {
 // clickableObjects.push(sphere3);
 
 
-
-
 // Loading Functions
 
 function loadTheModel(url) {
@@ -470,18 +468,7 @@ function placeObjectOnMesh(object, mesh, x, z) {
   }
 }
 
-
-
 initLandscape();
-
-
-
-
-
-
-
-
-
 
 
 
@@ -601,8 +588,6 @@ function createCursor(){
 
 
 
-
-
 // Events
 
 function hoverState(object) {
@@ -692,19 +677,61 @@ function updateLabelPositions(spheres) {
     const y = -(screenPos.y * window.innerHeight) / 2 + window.innerHeight / 2;
 
     labels[i].style.left = (x - labels[i].offsetWidth / 2) + "px";
-    labels[i].style.top = (y - labels[i].offsetHeight) + "px";
+    labels[i].style.top = (y - labels[i].offsetHeight /2) + "px";
   }
 }
 
 
+// menu
+let buttonMenu = document.querySelector('.but-menu');
+
+buttonMenu.addEventListener('click', () => {
+  
+  buttonMenu.classList.contains('open') 
+  ? (() => {
+    buttonMenu.classList.remove('open');
+    document.querySelector('.overlays').classList.remove('active');
+    document.querySelector('.menu-options').classList.remove('active');
+    document.querySelectorAll('.overlay').forEach(element => {
+      element.classList.remove('active');
+    })
+    showTriggers();
+  })()
+  : (() => {
+    buttonMenu.classList.add('open');
+    document.querySelector('.overlays').classList.add('active');
+    document.querySelector('.menu-options').classList.add('active');
+    document.querySelector('.overlay-explore').classList.add('active');
+    hideTriggers();
+  })();
+})
+
+document.querySelector('.menu-but-explore').addEventListener('click', () => {
+  document.querySelectorAll('.overlay').forEach(element => {
+    element.classList.remove('active');
+  });
+  document.querySelector('.overlay-explore').classList.add('active');
+})
+
+document.querySelector('.menu-but-submit').addEventListener('click', () => {
+  document.querySelectorAll('.overlay').forEach(element => {
+    element.classList.remove('active');
+  });
+  document.querySelector('.overlay-submit').classList.add('active');
+})
+
+
+
+
 
 // story loader
+let storyRef;
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.label').forEach(element => {
     element.addEventListener('click', () => {
       console.log('click');
-      let storyRef = element.dataset.storyref;
+        storyRef = element.dataset.storyref;
       loadStory(storyRef);
     })
   })
@@ -714,6 +741,7 @@ document.querySelector('.button-back').addEventListener('click', () => {
   closeStory();
   showTriggers();
 })
+
 
 function loadStory(storyRef) {
   loadStoryContent(storyRef);
@@ -756,13 +784,16 @@ function showTriggers(){
   })
 }
 
-// Bottom Navigation
+
+
+// Bottom 'Moon' Navigation
 
 let moonNavBlocks;
 
 document.addEventListener('DOMContentLoaded', () => {
-  moonNavBlocks = Array.from(document.querySelectorAll('.moon-nav-block'));
   
+  // Moon Nav Blocks
+  moonNavBlocks = Array.from(document.querySelectorAll('.moon-nav-block'));
   moonNavBlocks.forEach((block, index) => {
       block.addEventListener('mouseout', function(event) {
           hideMoonNavLabel();
@@ -771,8 +802,65 @@ document.addEventListener('DOMContentLoaded', () => {
           navStateUpdate(event, index);
           document.querySelector('.moon-nav-story').classList.remove('hidden');
       }); 
+      block.addEventListener('click', function(event) {
+          showMoonNavBigPreview(event, index);
+      });
   });
+  
+  // Big Preview - close
+  document.querySelector('.moon-nav-big-preview .button-close').addEventListener('click', () => {
+    document.querySelector('.moon-nav-big-preview').classList.remove('active');
+    document.querySelector('.bigPreviewEnterCircle').classList.remove('circle-animation');
+    showTriggers();
+  })
+  
+  // Big Preview - enter
+  document.querySelector('.moon-nav-big-preview .button-enter').addEventListener('click', () => {
+    document.querySelector('.moon-nav-big-preview').classList.remove('active');
+    loadStory(storyRef);
+  })
+  
 });
+
+
+
+function showMoonNavBigPreview(event, index) {
+  const bigPreviewTitle = document.querySelector('.moon-state-center').getAttribute('data-story');
+  const bigPreviewAuthor = document.querySelector('.moon-state-center').getAttribute('data-author');
+  storyRef = document.querySelector('.moon-state-center').getAttribute('data-storyref');
+  if (bigPreviewTitle) {
+      document.querySelector('.moon-nav-big-preview .title').textContent = bigPreviewTitle;
+  }
+  if (bigPreviewAuthor) {
+      document.querySelector('.moon-nav-big-preview .attribution').innerHTML = "Told by <br>"  + bigPreviewAuthor;
+  }
+  hideTriggers();
+  document.querySelector('.moon-nav-big-preview').classList.add('active');
+  fadeInBigTitle('.moon-nav-big-preview .title');
+}
+
+function fadeInBigTitle(ref){
+  const div = document.querySelector(ref);
+  const letters = [...div.textContent]; // Using the spread operator to turn a string into an array of characters
+  div.textContent = '';
+  
+  const enterButton = document.querySelector('.bigPreviewEnterCircle');
+  enterButton.classList.remove('circle-animation');
+  
+  // to get the animation to reset, we have to clone
+  var newEnterButton = enterButton.cloneNode(true);
+  enterButton.parentNode.replaceChild(newEnterButton, enterButton);
+  
+  newEnterButton.classList.add('circle-animation');
+  
+  letters.forEach((char) => {
+    const letter = document.createElement('span');
+    letter.className = 'letter';
+    letter.textContent = char;
+    letter.style.animationDelay = `${Math.random()}s`;
+    div.appendChild(letter);
+  });
+}
 
 function navStateUpdate(event, index) {
     let hoveredIndex = index;
@@ -855,6 +943,12 @@ function alignDivs() {
 
 
 
+
+
+
+
+
+
 // !————————7. Utility Classes
 
 // New function to get the highest vertex y-value of the landscape
@@ -904,6 +998,20 @@ function onError() {}
 
 
 
+// START 
+
+function initStart() {
+  // camera.position.z = 15;
+  // camera.position.x = 0
+  // camera.position.y = 300
+}
+
+
+
+
+
+
+
 
 
 
@@ -915,6 +1023,7 @@ const clock = new THREE.Clock()
 
 function init() {
   document.addEventListener('DOMContentLoaded', () => {
+    // set the center Moon Nav state
     navStateUpdate(null, 4);
   })
 }
@@ -955,6 +1064,8 @@ const tick = () =>
 
 
 init()
+
+initStart()
 
 tick()
 

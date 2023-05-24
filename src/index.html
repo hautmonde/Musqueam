@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,35 +9,103 @@
 <body>
     <canvas class="webgl" id="canvas"></canvas>
     
+    <section class="main-nav">
+        <div class="but-menu">
+            <div class="menu-bars">
+                <div class="menubar-1"></div>
+                <div class="menubar-2"></div>
+            </div>
+            <h4>Menu</h4>
+        </div>
+        <div class="logo">
+            <img src="./img/logo.png">
+        </div>
+        <div class="menu-options">
+            <h4 class="active menu-but-explore">Explore</h4>
+            <h4>About</h4>
+            <h4 class="menu-but-submit">Submit a Story</h4>
+        </div>
+    </section>
+    
+    <section class="overlays">
+        <div class="pattern"></div>
+        <section class="overlay overlay-explore">
+            <h2>Explore Musqueam culture by topic:</h2>
+            <div class="explore-topics">
+                <article>Leadership</article>
+                <span>/</span><article>Land</article>
+                <span>/</span><article>Vision</article>
+                <span>/</span><article>Weaving</article>
+                <span>/</span><article>Fishing</article>
+                <span>/</span><article>Elders</article>
+                <span>/</span><article>Governance</article>
+                <span>/</span><article>Canoeing</article>
+                <span>/</span><article>Language</article>
+                <span>/</span><article>Community</article>
+                <span>/</span><article>Art</article>
+                <span>/</span><article>Legacy</article>
+                <span>/</span><article>Resilience</article>
+                <span>/</span><article>Family</article>
+                <span>/</span><article>Water</article>
+                <span>/</span><article>Longhouse</article>
+                <span>/</span><article>The River Delta</article>
+                <span>/</span><article>Warriors</article>
+                <span>/</span><article>Hunting</article>
+                <span>/</span><article>Cedar</article>
+                <span>/</span><article>Ceremony</article>
+                <span>/</span><article>Dance</article>
+                <span>/</span><article>Sport</article>
+                <span>/</span><article>Environment</article>
+            </div>
+        </section>
+        <section class="overlay overlay-submit">
+            <div>
+                <h2>Submit your story</h2>
+                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s</p>
+            </div>
+            <div class="inputs">
+                <h3 class="input-name">Name</h3>
+                <h3 class="input-email">Email Address</h3>
+                <h3 class="input-subject">Story Subject</h3>
+                <h3 class="input-synopsis">Story Synopsis</h3>
+            </div>
+        </section>
+    </section>
+    
     <div class='label label1 active' data-storyref="story-weaving">
         <div class="label-title">Reclaiming Weaving</div>
         <div class="label-leftArrow"></div>
-        <div class="label-ball"><img src="img/preview_weaving.jpg"></div>
+        <div class="label-ball"><img src="./img/preview_weaving.jpg"></div>
         <div class="label-rightArrow"></div>
+        <div class="label-author">Told by<br>Wendy Grant-John</div>
     </div>
     <div class='label label2 active''>
         <div class="label-title">The Big Deal</div>
         <div class="label-leftArrow"></div>
-        <div class="label-ball"></div>
+        <div class="label-ball"><img src="./img/preview_bigdeal.png"></div>
         <div class="label-rightArrow"></div>
+        <div class="label-author">Told by<br>Morgan Guerin</div>
     </div>
     <div class='label label3 active''>
         <div class="label-title">Finding Solidarity in One Another</div>
         <div class="label-leftArrow"></div>
-        <div class="label-ball"></div>
+        <div class="label-ball"><img src="./img/preview_solidarity.png"></div>
         <div class="label-rightArrow"></div>
+        <div class="label-author">Told by<br>Larry Grant</div>
     </div>
     <div class='label label4 active''>
-        <div class="label-title">These Belongings</div>
+        <div class="label-title">These<br>Belongings</div>
         <div class="label-leftArrow"></div>
         <div class="label-ball"></div>
         <div class="label-rightArrow"></div>
+        <div class="label-author">(A placeholder)</div>
     </div>
     <div class='label label5 active''>
         <div class="label-title">Writing the Land</div>
         <div class="label-leftArrow"></div>
         <div class="label-ball"></div>
         <div class="label-rightArrow"></div>
+        <div class="label-author">(A placeholder)</div>
     </div>
 
     <div id="cursor">
@@ -51,39 +120,55 @@
         </article> 
     </div>
     
+    
+    <div class="moon-nav-big-preview">
+        <div class="button-close">
+            <img src="./img/x.svg">
+        </div>
+        <h1 class="title">Title here</h1>
+        <h2 class="attribution">Told by <span class="author"></span></h2>
+        <div class="button-enter">
+           <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+             <circle class="bigPreviewEnterCircle" cx="50" cy="50" r="40" stroke="white" stroke-width="1" fill="transparent" />
+           </svg>
+           <div>Enter</div>
+        </div>
+        
+    </div>
+    
     <div class="moon-nav-story">
         <div class="moon-nav-story-content">Text here</div>
     </div>
     <section class="moon-nav">
-        <div class="moon-nav-block" data-story="Reclaiming Weaving">
+        <div class="moon-nav-block" data-story="Reclaiming Weaving" data-author="Wendy Grant-John" data-storyref="story-weaving">
             <div class="moon-nav-left-unfilled"></div>
             <div class="moon-nav-left-filled"></div>
             <div class="moon-nav-center"></div>
             <div class="moon-nav-right-filled"></div>
             <div class="moon-nav-right-unfilled"></div>
         </div>
-        <div class="moon-nav-block" data-story="The Big Deal">
+        <div class="moon-nav-block" data-story="The Big Deal" data-author="Wendy Grant-John">
             <div class="moon-nav-left-unfilled"></div>
             <div class="moon-nav-left-filled"></div>
             <div class="moon-nav-center"></div>
             <div class="moon-nav-right-filled"></div>
             <div class="moon-nav-right-unfilled"></div>
         </div>
-        <div class="moon-nav-block" data-story="Finding Solidarity in One Another">
+        <div class="moon-nav-block" data-story="Finding Solidarity in One Another" data-author="Wendy Grant-John">
             <div class="moon-nav-left-unfilled"></div>
             <div class="moon-nav-left-filled"></div>
             <div class="moon-nav-center"></div>
             <div class="moon-nav-right-filled"></div>
             <div class="moon-nav-right-unfilled"></div>
         </div>
-        <div class="moon-nav-block moon-state-left-filled-1" data-story="These Belongings">
+        <div class="moon-nav-block moon-state-left-filled-1" data-story="These Belongings" data-author="A Placeholder">
             <div class="moon-nav-left-unfilled"></div>
             <div class="moon-nav-left-filled"></div>
             <div class="moon-nav-center"></div>
             <div class="moon-nav-right-filled"></div>
             <div class="moon-nav-right-unfilled"></div>
         </div>
-        <div class="moon-nav-block moon-state-center" data-story="Writing the Land">
+        <div class="moon-nav-block moon-state-center" data-story="Writing the Land" data-author="A Placeholder">
             <div class="moon-nav-left-unfilled"></div>
             <div class="moon-nav-left-filled"></div>
             <div class="moon-nav-center"></div>

@@ -19,6 +19,7 @@ module.exports = {
                 { from: path.resolve(__dirname, '../static') },
                 { from: 'src/models', to: 'models' },
                 { from: 'src/textures', to: 'textures' },
+                { from: 'src/audio', to: 'audio' },
             ]
         }),
         ...glob.sync('./src/*.html').map((fileName) => new HtmlWebpackPlugin({
@@ -32,10 +33,24 @@ module.exports = {
     {
         rules:
         [
+            
             // HTML
             {
                 test: /\.(html)$/,
-                use: ['html-loader']
+                use: [{
+                    loader: 'html-loader',
+                    options: {
+                        sources: {
+                            list: [
+                                {
+                                    tag: 'img',
+                                    attribute: 'src',
+                                    type: 'src',
+                                }
+                            ]
+                        }
+                    }
+                }]
             },
 
             // JS
@@ -70,18 +85,24 @@ module.exports = {
            // Images
            {
                test: /\.(jpg|png|gif|svg)$/,
+               type: 'asset/resource',
+               generator: {
+                   filename: 'img/[hash][ext]'
+               }
+           }, 
+           // Audio
+           {
+               test: /\.(mp3|wav|ogg)$/,
                use: [
                    {
-                       loader: 'url-loader',
+                       loader: 'file-loader',
                        options: {
-                           limit: 8192, // Images smaller than 8KB will be transformed into base64 and inlined
-                           outputPath: 'img/',
                            name: '[name].[hash].[ext]',
+                           outputPath: 'audio/',
                        },
                    },
                ],
-           },
-
+            },
             // Fonts
             {
                 test: /\.(ttf|eot|woff|woff2)$/,
